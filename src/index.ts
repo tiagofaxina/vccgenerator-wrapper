@@ -2,6 +2,7 @@ import { html2json } from './utils/html2json';
 import { json2json } from './utils/json2json';
 import { BankResonseData, fetchBanks, getBanksFromData } from './services/fetch-banks';
 import { BinResonseData, fetchBins, getBinsFromData } from './services/fetch-bins';
+import { acceptedBrands } from './config/brands';
 
 const COUNTRY = 'Brazil';
 const BRAND = 'AMERICAN EXPRESS COMPANY';
@@ -68,15 +69,39 @@ const getBins = async ({ country, brand, bank }: FetchBinsparams): Promise<strin
 
 (async () => {
   try {
-    const banks = await getBanks({ country: COUNTRY, brand: BRAND });
-    console.log(banks);
+    //@ts-ignore
+    const brand = process.argv.find(arg => arg.includes('brand')).split('=')[1] || 'DEFAULT';
 
-    // const bins = await getBins({ country: COUNTRY, brand: BRAND, bank: banks[0] });
+    //@ts-ignore
+    const brandsToFetch = acceptedBrands[brand.toUpperCase()];
+
+    const banksPromise = brandsToFetch.map((brandToFetch: string) =>
+      getBanks({ country: COUNTRY, brand: brandToFetch }),
+    );
+    const banksArray = await Promise.all(banksPromise);
+    const banksConcatenated = banksArray.reduce(function (arr, row) {
+      //@ts-ignore
+      return arr.concat(row);
+    }, []) as string[];
+
+    const banks = [...new Set(banksConcatenated)];
+
     const promises = banks.map(bank => getBins({ country: COUNTRY, brand: BRAND, bank }));
     const binsArray = await Promise.all(promises);
-    const bins = binsArray.reduce(function (arr, row) {
+    const binsConcatenated = binsArray.reduce(function (arr, row) {
+      //@ts-ignore
       return arr.concat(row);
     }, []);
+
+    const bins = [...new Set(binsConcatenated)];
+
+    console.log('---------------------------------------------------------');
+    console.log('BANDEIRA: ', brand.toUpperCase());
+    console.log('QTD. BANCOS: ', banks.length);
+    console.log('BANCOS: ');
+    console.log(banks);
+    console.log('QTD. BINS: ', bins.length);
+    console.log('BINS: ');
     console.log(bins);
   } catch (error) {
     console.log(error);
