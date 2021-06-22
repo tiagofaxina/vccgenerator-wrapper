@@ -102,15 +102,18 @@ const getBins = async ({ country, brand, bank }: FetchBinsparams): Promise<strin
       }),
     );
 
+    const banks = [...new Set(allBanks)];
+    const bins = [...new Set(allBins)];
+
     console.log('---------------------------------------------------------');
     console.log('BANDEIRA: ', brand.toUpperCase());
     console.log('BANDEIRAS: ', brandsToFetch);
-    console.log('QTD. BANCOS: ', allBanks.length);
+    console.log('QTD. BANCOS: ', banks.length);
     console.log('BANCOS: ');
-    console.log(allBanks);
-    console.log('QTD. BINS: ', allBins.length);
+    console.log(banks);
+    console.log('QTD. BINS: ', bins.length);
     console.log('BINS: ');
-    console.log(allBins);
+    console.log(bins);
   } catch (error) {
     console.log(error);
   }
