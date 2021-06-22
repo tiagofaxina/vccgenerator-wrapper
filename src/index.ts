@@ -86,7 +86,7 @@ const getBins = async ({ country, brand, bank }: FetchBinsparams): Promise<strin
 
     const banks = [...new Set(banksConcatenated)];
 
-    const promises = banks.map(bank => getBins({ country: COUNTRY, brand: BRAND, bank }));
+    const promises = banks.map(bank => getBins({ country: COUNTRY, brand, bank }));
     const binsArray = await Promise.all(promises);
     const binsConcatenated = binsArray.reduce(function (arr, row) {
       //@ts-ignore
