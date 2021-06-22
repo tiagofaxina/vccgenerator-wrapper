@@ -50,7 +50,6 @@ const getBins = async ({ country, brand, bank }: FetchBinsparams): Promise<strin
       bank,
     });
 
-    console.log(response);
     const data = response.data;
     let json;
 
