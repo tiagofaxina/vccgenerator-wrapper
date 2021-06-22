@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 import { html2json } from './utils/html2json';
 import { json2json } from './utils/json2json';
 import { BankResonseData, fetchBanks, getBanksFromData } from './services/fetch-banks';
@@ -80,6 +83,8 @@ const getBins = async ({ country, brand, bank }: FetchBinsparams): Promise<strin
     let allBanks: string[] = [];
     let allBins: string[] = [];
 
+    fs.writeFileSync(path.join(__dirname, '..', 'results', brand, `${brand}_invalid`), '');
+
     await Promise.all(
       brandsToFetch.map(async (brandToFetch: string) => {
         try {
@@ -116,6 +121,9 @@ const getBins = async ({ country, brand, bank }: FetchBinsparams): Promise<strin
         brandBinsMatched.push(bin);
       } else {
         brandBinsNotMatched.push(bin);
+        fs.writeFileSync(path.join(__dirname, '..', 'results', brand, `${brand}_invalid`), `${bin}${os.EOL}`, {
+          flag: 'a+',
+        });
       }
     });
 
@@ -126,18 +134,12 @@ const getBins = async ({ country, brand, bank }: FetchBinsparams): Promise<strin
     console.log('BANCOS: ');
     console.log(banks);
     console.log('QTD. BINS: ', bins.length);
-    console.log('BINS: ');
-    console.log(bins);
     console.log('QTD. BINS RECONHECIDOS: ', brandBinsMatched.length);
-    console.log('BINS RECONHECIDOS: ');
-    console.log(brandBinsMatched);
 
     if (brandBinsNotMatched.length === 0) {
       console.log('TODOS OS BINS FORAM RECONHECIDOS');
     } else {
       console.log('ALGUNS BINS NÃO FORAM RECONHECIDOS');
-      console.log('BINS NÃO RECONHECIDOS: ');
-      console.log(brandBinsNotMatched);
     }
   } catch (error) {
     console.log(error);
