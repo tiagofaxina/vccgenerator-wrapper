@@ -51,6 +51,7 @@ const getBins = async ({ country, brand, bank }: FetchBinsparams): Promise<strin
     });
     const data = response.data;
     let json;
+    // console.log(response);
 
     const content_type = response.headers['content-type'];
     if (content_type.includes('json')) {
@@ -75,34 +76,41 @@ const getBins = async ({ country, brand, bank }: FetchBinsparams): Promise<strin
     //@ts-ignore
     const brandsToFetch = acceptedBrands[brand.toUpperCase()];
 
-    const banksPromise = brandsToFetch.map((brandToFetch: string) =>
-      getBanks({ country: COUNTRY, brand: brandToFetch }),
+    let allBanks: string[] = [];
+    let allBins: string[] = [];
+
+    await Promise.all(
+      brandsToFetch.map(async (brandToFetch: string) => {
+        try {
+          const banks = await getBanks({ country: COUNTRY, brand: brandToFetch });
+
+          allBanks = [...allBanks, ...banks];
+
+          const binsPromises = banks.map(bank => getBins({ country: COUNTRY, brand: brandToFetch, bank }));
+          const binsArray = await Promise.all(binsPromises);
+
+          const binsConcatenated = binsArray.reduce(function (arr, row) {
+            //@ts-ignore
+            return arr.concat(row);
+          }, []) as string[];
+
+          allBins = [...allBins, ...binsConcatenated];
+          return allBins;
+        } catch (error) {
+          console.log(error);
+        }
+      }),
     );
-    const banksArray = await Promise.all(banksPromise);
-    const banksConcatenated = banksArray.reduce(function (arr, row) {
-      //@ts-ignore
-      return arr.concat(row);
-    }, []) as string[];
-
-    const banks = [...new Set(banksConcatenated)];
-
-    const promises = banks.map(bank => getBins({ country: COUNTRY, brand, bank }));
-    const binsArray = await Promise.all(promises);
-    const binsConcatenated = binsArray.reduce(function (arr, row) {
-      //@ts-ignore
-      return arr.concat(row);
-    }, []);
-
-    const bins = [...new Set(binsConcatenated)];
 
     console.log('---------------------------------------------------------');
     console.log('BANDEIRA: ', brand.toUpperCase());
-    console.log('QTD. BANCOS: ', banks.length);
+    console.log('BANDEIRAS: ', brandsToFetch);
+    console.log('QTD. BANCOS: ', allBanks.length);
     console.log('BANCOS: ');
-    console.log(banks);
-    console.log('QTD. BINS: ', bins.length);
+    console.log(allBanks);
+    console.log('QTD. BINS: ', allBins.length);
     console.log('BINS: ');
-    console.log(bins);
+    console.log(allBins);
   } catch (error) {
     console.log(error);
   }
