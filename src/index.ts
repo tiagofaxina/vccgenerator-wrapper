@@ -103,13 +103,15 @@ const getBins = async ({ country, brand, bank }: FetchBinsparams): Promise<strin
       }),
     );
 
+    const banks = [...new Set(allBanks)];
+    const bins = [...new Set(allBins)];
+
     //@ts-ignore
     const brandBinRegex = binRegex[brand.toUpperCase()];
     const brandBinsMatched: string[] = [];
     const brandBinsNotMatched: string[] = [];
 
-    allBins.map(bin => {
-      console.log(brandBinRegex.test(String(bin)));
+    bins.map(bin => {
       if (brandBinRegex.test(String(bin))) {
         brandBinsMatched.push(bin);
       } else {
@@ -120,20 +122,22 @@ const getBins = async ({ country, brand, bank }: FetchBinsparams): Promise<strin
     console.log('---------------------------------------------------------');
     console.log('BANDEIRA: ', brand.toUpperCase());
     console.log('BANDEIRAS: ', brandsToFetch);
-    console.log('QTD. BANCOS: ', allBanks.length);
+    console.log('QTD. BANCOS: ', banks.length);
     console.log('BANCOS: ');
-    console.log(allBanks);
-    console.log('QTD. BINS: ', allBins.length);
+    console.log(banks);
+    console.log('QTD. BINS: ', bins.length);
     console.log('BINS: ');
-    console.log(allBins);
+    console.log(bins);
     console.log('QTD. BINS RECONHECIDOS: ', brandBinsMatched.length);
     console.log('BINS RECONHECIDOS: ');
     console.log(brandBinsMatched);
 
-    if (allBins.length === brandBinsMatched.length) {
+    if (brandBinsNotMatched.length === 0) {
       console.log('TODOS OS BINS FORAM RECONHECIDOS');
     } else {
       console.log('ALGUNS BINS NÃO FORAM RECONHECIDOS');
+      console.log('BINS NÃO RECONHECIDOS: ');
+      console.log(brandBinsNotMatched);
     }
   } catch (error) {
     console.log(error);
