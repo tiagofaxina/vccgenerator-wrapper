@@ -2,7 +2,7 @@ import { html2json } from './utils/html2json';
 import { json2json } from './utils/json2json';
 import { BankResonseData, fetchBanks, getBanksFromData } from './services/fetch-banks';
 import { BinResonseData, fetchBins, getBinsFromData } from './services/fetch-bins';
-import { acceptedBrands } from './config/brands';
+import { acceptedBrands, binRegex } from './config/brands';
 
 const COUNTRY = 'Brazil';
 const BRAND = 'AMERICAN EXPRESS COMPANY';
@@ -49,6 +49,8 @@ const getBins = async ({ country, brand, bank }: FetchBinsparams): Promise<strin
       brand,
       bank,
     });
+
+    console.log(response);
     const data = response.data;
     let json;
 
@@ -86,7 +88,7 @@ const getBins = async ({ country, brand, bank }: FetchBinsparams): Promise<strin
 
     const banks = [...new Set(banksConcatenated)];
 
-    const promises = banks.map(bank => getBins({ country: COUNTRY, brand: BRAND, bank }));
+    const promises = banks.map(bank => getBins({ country: COUNTRY, brand, bank }));
     const binsArray = await Promise.all(promises);
     const binsConcatenated = binsArray.reduce(function (arr, row) {
       //@ts-ignore
@@ -94,6 +96,20 @@ const getBins = async ({ country, brand, bank }: FetchBinsparams): Promise<strin
     }, []);
 
     const bins = [...new Set(binsConcatenated)];
+
+    //@ts-ignore
+    const brandBinRegex = binRegex[brand.toUpperCase()];
+    const brandBinsMatched: string[] = [];
+    const brandBinsNotMatched: string[] = [];
+
+    bins.map(bin => {
+      console.log(brandBinRegex.test(String(bin)));
+      if (brandBinRegex.test(String(bin))) {
+        brandBinsMatched.push(bin);
+      } else {
+        brandBinsNotMatched.push(bin);
+      }
+    });
 
     console.log('---------------------------------------------------------');
     console.log('BANDEIRA: ', brand.toUpperCase());
@@ -103,6 +119,15 @@ const getBins = async ({ country, brand, bank }: FetchBinsparams): Promise<strin
     console.log('QTD. BINS: ', bins.length);
     console.log('BINS: ');
     console.log(bins);
+    console.log('QTD. BINS RECONHECIDOS: ', brandBinsMatched.length);
+    console.log('BINS RECONHECIDOS: ');
+    console.log(brandBinsMatched);
+
+    if (bins.length === brandBinsMatched.length) {
+      console.log('TODOS OS BINS FORAM RECONHECIDOS');
+    } else {
+      console.log('ALGUNS BINS NÃO FORAM RECONHECIDOS');
+    }
   } catch (error) {
     console.log(error);
   }
